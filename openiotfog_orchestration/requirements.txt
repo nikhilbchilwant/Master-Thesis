@@ -1,0 +1,8 @@
+flask
+docker
+netifaces
+bson
+pyudev
+gevent
+jsonschema
+flask_socketio

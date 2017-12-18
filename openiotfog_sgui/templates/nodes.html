@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+<!--{% block secondlist %}-->
+
+<!--{% endblock %}-->
+
+
+{% block content %}
+    <h1>Nodes</h1>
+    <!--{% for post in posts %}-->
+    <!--<div><p>{{ post.author.nickname }} says: <b>{{ post.body }}</b></p></div>-->
+    <!--{% endfor %}-->
+    <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            Worker Nodes
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table width="100%" class="table table-hover" id="nodes_table">
+                                    <thead>
+                                        <tr>
+                                            <!--<th>#</th>-->
+                                            <th>node_hostname</th>
+                                            <th>node_id</th>
+                                            <th>node_ip</th>
+                                            <th>node_label</th>
+                                            <th>node_layer</th>
+                                            <th>node_starttime</th>
+                                            <th>node_status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="node_table_body">
+
+                                        <!--<tr>-->
+                                            <!--<td>1</td>-->
+                                            <!--<td>Mark</td>-->
+                                            <!--<td>Otto</td>-->
+                                            <!--<td>@mdo</td>-->
+                                        <!--</tr>-->
+                                        <!--<tr>-->
+                                            <!--<td>2</td>-->
+                                            <!--<td>Jacob</td>-->
+                                            <!--<td>Thornton</td>-->
+                                            <!--<td>@fat</td>-->
+                                        <!--</tr>-->
+                                        <!--<tr>-->
+                                            <!--<td>3</td>-->
+                                            <!--<td>Larry</td>-->
+                                            <!--<td>the Bird</td>-->
+                                            <!--<td>@twitter</td>-->
+                                        <!--</tr>-->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /.table-responsive -->
+                        </div>
+                        <!-- /.panel-body -->
+
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-6 -->
+    </div>
+
+<h2>Add Node</h2>
+
+      {% for message in form.ip.errors %}
+         <div>{{ message }}</div>
+      {% endfor %}
+
+      {% for message in form.layer.errors %}
+         <div>{{ message }}</div>
+      {% endfor %}
+
+      <form action = "http://10.42.0.1:8080/nodes" method = post>
+         <fieldset>
+            <!--<legend>Contact Form</legend>-->
+            {{ form.hidden_tag() }}
+
+            <div style = font-size:20px; font-weight:bold; margin-left:150px;>
+               {{ form.ip.label }}<br>
+               {{ form.ip }}
+               <br>
+               {{ form.layer.label }}<br>
+               {{ form.layer }}
+               <br>
+               {{ form.submit }}
+            </div>
+
+         </fieldset>
+      </form>
+    <script type="text/javascript" charset="utf-8">
+
+        //connect to the socket server.
+        //var socket = io.connect('http://' + document.domain + ':' + location.port + '/nodes');
+        var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/nodes');
+
+        $(document).ready(function(){
+
+
+            console.log("socket declared");
+
+            console.log("after")
+            console.log(socket)
+
+            //receive details from server
+            socket.on('connect', function(data) {
+                console.log("I am connected");
+                socket.emit('monitor_nodes',JSON.stringify({node: "test"}));
+            });
+
+
+            socket.on('control', function(msg) {
+                console.log("Received control message: " + msg.data);
+
+            });
+
+            socket.on('nodelist', function(msg) {
+                //console.log("Received number" + msg.data);
+
+                response = JSON.parse(msg.data);
+
+                var $tablebody = $('#node_table_body');
+                $tablebody.empty();
+
+                var trHTML = '';
+
+                var list = document.getElementById('#second_levelnode_list');
+
+                $('#second_levelnode_list').empty();
+                liHTML = "";
+
+                $.each(response, function (i, item) {
+                    trHTML += '<tr class="table-row"><td>' + item.node_hostname + '</td><td>' + item.node_id + '</td><td>' + item.node_ip +  '</td><td>' + item.node_label +  '</td><td>' + item.node_layer +  '</td><td>' + item.node_starttime +  '</td><td>' + item.node_status +'</td></tr>';
+                    // add to second level link
+                    liHTML += '<li><a href='+'"/nodes/' + item.node_id +'">' +item.node_hostname+'</a></li>';
+                });
+
+                $('#node_table_body').append(trHTML);
+                $('#second_levelnode_list').append(liHTML);
+
+
+            });
+
+            socket.on('error', function(msg) {
+                console.log("Received error" + msg.stacktrace);
+
+            });
+
+
+        })
+
+
+        $(document).on("click", ".table-row", function(){
+            console.log($(this));
+            $tds = $(this).find("td:nth-child(2)");
+            console.log($tds.text())
+            if($tds.text()){
+                window.location = '/nodes/' + $tds.text();
+            }
+
+        });
+
+
+
+    </script>
+
+
+
+{% endblock %}

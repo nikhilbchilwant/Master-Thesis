@@ -1,0 +1,7 @@
+flask
+gevent
+enum
+jsonschema
+rrdtool
+psutil
+pyudev
